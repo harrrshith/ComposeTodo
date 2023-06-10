@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">ComposeTodo</string>
+    <string name="nice_task">Nice task</string>
+    <string name="so_empty">wow! so empty</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="filter">filter</string>
+    <string name="all">All</string>
+    <string name="clear_completed">Clear Completed</string>
+    <string name="refresh">Refresh</string>
+    <string name="statistics">Statistics</string>
+    <string name="task_details">Task Details</string>
+    <string name="delete_tasks">Delete Task</string>
+    <string name="active">Active</string>
+    <string name="completed">Completed</string>
 </resources>
