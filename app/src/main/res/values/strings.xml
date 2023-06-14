@@ -12,4 +12,19 @@
     <string name="delete_tasks">Delete Task</string>
     <string name="active">Active</string>
     <string name="completed">Completed</string>
+    <string name="label_all">All Tasks</string>
+    <string name="no_tasks">You have no tasks!</string>
+    <string name="label_active">Active Tasks</string>
+    <string name="label_completed">Completed Tasks</string>
+    <string name="no_tasks_active">You have no active tasks!</string>
+    <string name="no_tasks_completed">You have no completed tasks!</string>
+    <string name="loading_error">Error!</string>
+    <string name="cleared_completed_tasks">Cleared completed Tasks</string>
+    <string name="marked_complete">Task Marked Complete</string>
+    <string name="marked_active">Task Marked Active</string>
+    <string name="task_list">Task List</string>
+    <string name="save_tasks">Save tasks</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_description">Add description</string>
+    <string name="add_task">Add Task</string>
 </resources>

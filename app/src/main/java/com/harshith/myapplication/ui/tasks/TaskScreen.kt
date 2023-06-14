@@ -1,5 +1,7 @@
 package com.harshith.myapplication.ui.tasks
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,13 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -30,9 +37,16 @@ import com.harshith.myapplication.data.Task
 import com.harshith.myapplication.ui.theme.ComposeTodoTheme
 import com.harshith.myapplication.util.TaskTopAppBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskScreen (){
+fun TaskScreen (
+    @StringRes userMessage: Int,
+    onAddTask: () -> Unit,
+    onTaskClick: (Task) -> Unit,
+    onUserMessageDisplayed: () -> Unit,
+    openDrawer: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: TasksViewModel
+){
    Scaffold(
        topBar = {
            TaskTopAppBar(
@@ -44,22 +58,39 @@ fun TaskScreen (){
                onRefresh = {}
            )
        },
-       modifier = Modifier.fillMaxSize()
-   ) {
-        //TODO
+       modifier = Modifier.fillMaxSize(),
+       floatingActionButton = {
+           FloatingActionButton(onClick = onAddTask) {
+               Icon(Icons.Filled.Add, contentDescription = null )
+           }
+       }
+   ) {paddingValue ->
+        val uiState by viewModel.uiState.collectAsState()
+
+        TaskContent(
+            loading = uiState.isLoading,
+            tasks = uiState.items,
+            currentFilteringLabel = uiState.filteringUiInfo.currentFilterLabel,
+            noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
+            noTasksIcon = uiState.filteringUiInfo.noTasksIcon,
+            onRefresh = viewModel::refresh,
+            onTaskClick = onTaskClick,
+            onTaskCheckedChange = viewModel::completeTask,
+            modifier = Modifier.padding(paddingValue))
    }
 }
 
 @Composable
 fun TaskContent(
-    modifier: Modifier = Modifier,
-    tasks: List<Task> = listOf(
-        Task("1", "task1", stringResource(R.string.nice_task), false),
-        Task("2", "task2", stringResource(R.string.nice_task), true),
-        Task("3", "task3", stringResource(R.string.nice_task), false)),
+    loading: Boolean,
+    tasks: List<Task>,
+    @StringRes currentFilteringLabel: Int,
+    @StringRes noTasksLabel: Int,
+    @DrawableRes noTasksIcon: Int,
     onRefresh: () -> Unit,
     onTaskClick: (Task) -> Unit,
-    onTaskCheckedChange: (Task, Boolean) -> Unit){
+    onTaskCheckedChange: (Task, Boolean) -> Unit,
+    modifier: Modifier = Modifier){
     Surface {
         Column(
             modifier
@@ -68,7 +99,7 @@ fun TaskContent(
 
             Text(text = "All Task",
             modifier = Modifier.padding(8.dp),
-            style = MaterialTheme.typography.titleSmall)
+            style = MaterialTheme.typography.headlineSmall)
 
             LazyColumn{
                 items(tasks){task ->
@@ -140,7 +171,7 @@ fun TasksEmptyContent(
 fun TaskContentPreview(){
     ComposeTodoTheme {
         Surface {
-            TaskContent()
+            TaskContent(loading = false, tasks = emptyList(), R.string.label_active, R.string.no_tasks_active, R.drawable.ic_empty, onRefresh = {}, onTaskClick = {}, onTaskCheckedChange = {_ , _->})
         }
     }
 }
@@ -177,16 +208,6 @@ fun TaskEmptyContentPreview(){
     ComposeTodoTheme {
         Surface {
             TasksEmptyContent()
-        }
-    }
-}
-
-@Preview
-@Composable
-fun TaskScreenPreview(){
-    ComposeTodoTheme {
-        Surface {
-            TaskScreen()
         }
     }
 }
