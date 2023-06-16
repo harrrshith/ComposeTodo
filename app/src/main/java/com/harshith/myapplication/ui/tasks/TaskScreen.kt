@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.harshith.myapplication.R
 import com.harshith.myapplication.data.Task
 import com.harshith.myapplication.ui.theme.ComposeTodoTheme
@@ -45,7 +46,7 @@ fun TaskScreen (
     onUserMessageDisplayed: () -> Unit,
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TasksViewModel
+    viewModel: TasksViewModel = hiltViewModel()
 ){
    Scaffold(
        topBar = {
