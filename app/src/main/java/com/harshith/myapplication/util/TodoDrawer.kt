@@ -11,11 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.ModalDrawer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,31 +27,37 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.harshith.myapplication.R
+import com.harshith.myapplication.TodoNavigationAction
 import com.harshith.myapplication.ui.theme.ComposeTodoTheme
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppModalDrawer(
-    drawerState: DrawerState,
     currentRoute: String,
-    navigationActions: () -> Unit, /**NavigationActions*/
+    drawerState: androidx.compose.material.DrawerState,
+    navigationActions: TodoNavigationAction,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     content: @Composable () -> Unit
 ){
-    ModalDrawerSheet(
-        content = {
+    ModalDrawer(
+        drawerState = drawerState,
+        drawerContent = {
             AppDrawer(
                 currentRoute = currentRoute,
-                navigateToTasks = {},
-                navigateToStatistics = {},
-                closeDrawer = {},
+                navigateToTasks = { navigationActions.navigateToTasks()},
+                navigateToStatistics = { navigationActions.navigateToStatistics() },
+                closeDrawer = { coroutineScope.launch{drawerState.close()} }
             )
-            content()
         }
-    )
+    ) {
+       content()
+    }
+
 }
+
+
 
 @Composable
 fun AppDrawer(
