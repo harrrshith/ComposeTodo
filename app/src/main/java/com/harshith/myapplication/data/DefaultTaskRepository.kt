@@ -1,11 +1,12 @@
 package com.harshith.myapplication.data
 
 import com.harshith.myapplication.data.source.local.TaskDao
-import com.harshith.myapplication.data.source.network.NetworkDataSource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class DefaultTaskRepository(
-    private val networkDataSource: NetworkDataSource,
+class DefaultTaskRepository @Inject constructor(
+    //private val networkDataSource: NetworkDataSource,
     private val localDataSource: TaskDao
 ) : TaskRepository {
     override suspend fun createTask(title: String, description: String) {
@@ -37,11 +38,11 @@ class DefaultTaskRepository(
     }
 
     override fun getTasksStream(): Flow<List<Task>> {
-        TODO("Not yet implemented")
+        return flow { emptyList<Task>() }
     }
 
     override suspend fun getTasks(forceUpdate: Boolean): List<Task> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override suspend fun refresh() {
