@@ -83,6 +83,7 @@ dependencies {
     val lifeCycleVersion = "2.6.1"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifeCycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifeCycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifeCycleVersion")
     implementation("androidx.hilt:hilt-navigation-fragment:1.0.0")
 
     val navigationVersion = "2.5.3"
