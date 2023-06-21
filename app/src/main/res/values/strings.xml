@@ -30,4 +30,11 @@
     <string name="edit_task">Edit Task</string>
     <string name="all_tasks">All Tasks</string>
     <string name="empty_tasks">Tasks cannot be empty</string>
+    <string name="task_saved_successfully">Task saved successfully</string>
+    <string name="task_added_successfully">Task added successfully</string>
+    <string name="task_deleted_successfully">Task deleted successfully</string>
+    <string name="task_not_found">Task not found</string>
+    <string name="task_marked_complete">Task marked complete</string>
+    <string name="no_data">No data</string>
+    <string name="task_activated">Task activated</string>
 </resources>

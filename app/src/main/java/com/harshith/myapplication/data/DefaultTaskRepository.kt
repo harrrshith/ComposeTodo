@@ -1,5 +1,6 @@
 package com.harshith.myapplication.data
 
+import android.util.Log
 import com.harshith.myapplication.data.source.local.TaskDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -74,6 +75,7 @@ class DefaultTaskRepository @Inject constructor(
     }
 
     override fun getTaskStream(taskId: String): Flow<Task?> {
+        Log.e("ResponseStream", taskId)
         return localDataSource.observerById(taskId).map { it.toExternal() }
     }
 

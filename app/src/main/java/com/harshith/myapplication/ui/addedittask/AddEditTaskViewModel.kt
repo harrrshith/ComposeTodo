@@ -70,7 +70,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    fun loadTask(taskId: String){
+    private fun loadTask(taskId: String){
         viewModelScope.launch {
             taskRepository.getTask(taskId = taskId).let {task ->
                 if(task != null){

@@ -1,5 +1,6 @@
 package com.harshith.myapplication
 
+import android.util.Log
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.harshith.myapplication.TodoDestinationArgs.TASK_ID_ARG
@@ -27,7 +28,7 @@ object TodoDestination{
     const val TASK_ROUTE = "$TASKS_SCREEN?$USER_MSG_ARG={$USER_MSG_ARG}"
     const val STATISTICS_ROUTE = STATISTICS_SCREEN
     const val TASK_DETAILS_ROUTE = "$TASK_DETAIL_SCREEN/{$TASK_ID_ARG}"
-    const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG=${TASK_ID_ARG}"
+    const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG={$TASK_ID_ARG}"
 }
 
 class TodoNavigationAction(private val navController: NavHostController){
@@ -62,8 +63,8 @@ class TodoNavigationAction(private val navController: NavHostController){
     }
 
     fun navigateToTaskDetails(taskId: String?){
-        navController.navigate("$TASK_DETAIL_SCREEN/{$taskId}"){
-
+        navController.navigate("$TASK_DETAIL_SCREEN/$taskId"){
+        Log.e("Response", "$taskId")
         }
     }
 

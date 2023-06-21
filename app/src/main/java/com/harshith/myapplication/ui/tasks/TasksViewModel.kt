@@ -3,6 +3,9 @@ package com.harshith.myapplication.ui.tasks
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harshith.myapplication.ADD_EDIT_RESULT_OK
+import com.harshith.myapplication.DELETE_RESULT_OK
+import com.harshith.myapplication.EDIT_RESULT_OK
 import com.harshith.myapplication.R
 import com.harshith.myapplication.data.Task
 import com.harshith.myapplication.data.TaskRepository
@@ -74,7 +77,7 @@ class TasksViewModel @Inject constructor(
             initialValue = TasksUiState(isLoading = true)
         )
 
-    private fun setFiltering(requestType: TasksFilterTypes){
+    fun setFiltering(requestType: TasksFilterTypes){
         savedStateHandle[TASKS_FILTER_SAVED_STATE_KEY] = requestType
     }
 
@@ -98,8 +101,14 @@ class TasksViewModel @Inject constructor(
 
     fun showEditResultMessage(result: Int){
         when(result){
-            //TODO()
+            EDIT_RESULT_OK -> showSnackBarMessage(R.string.task_saved_successfully)
+            ADD_EDIT_RESULT_OK -> showSnackBarMessage(R.string.task_added_successfully)
+            DELETE_RESULT_OK -> showSnackBarMessage(R.string.task_deleted_successfully)
         }
+    }
+
+    fun snackBarMessageShown(){
+        _userMessage.value = null
     }
 
     private fun filterTasks(tasks: List<Task>, filterType: TasksFilterTypes): List<Task>{

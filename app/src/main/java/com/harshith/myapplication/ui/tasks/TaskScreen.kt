@@ -13,28 +13,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.harshith.myapplication.R
 import com.harshith.myapplication.data.Task
+import com.harshith.myapplication.ui.tasks.TasksFilterTypes.ACTIVE_TASKS
+import com.harshith.myapplication.ui.tasks.TasksFilterTypes.ALL_TASKS
+import com.harshith.myapplication.ui.tasks.TasksFilterTypes.COMPLETED_TASKS
 import com.harshith.myapplication.ui.theme.ComposeTodoTheme
 import com.harshith.myapplication.util.TaskTopAppBar
 
@@ -46,38 +54,57 @@ fun TaskScreen (
     onUserMessageDisplayed: () -> Unit,
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TasksViewModel = hiltViewModel()
+    viewModel: TasksViewModel = hiltViewModel(),
+    scaffoldState: ScaffoldState = rememberScaffoldState()
 ){
    Scaffold(
+       scaffoldState = scaffoldState,
        topBar = {
            TaskTopAppBar(
-               openDrawer = {},
-               onFilterAllTasks = {},
-               onFilerActiveTasks = {},
-               onFilterCompletedTasks = {},
-               onClearCompletedTasks = {},
+               openDrawer = openDrawer,
+               onFilterAllTasks = { viewModel.setFiltering(ALL_TASKS) },
+               onFilerActiveTasks = { viewModel.setFiltering(ACTIVE_TASKS) },
+               onFilterCompletedTasks = { viewModel.setFiltering(COMPLETED_TASKS) },
+               onClearCompletedTasks = { viewModel.clearCompletedTasks() },
                onRefresh = {}
            )
        },
-       modifier = Modifier.fillMaxSize(),
+       modifier = modifier.fillMaxSize(),
        floatingActionButton = {
            FloatingActionButton(onClick = onAddTask) {
                Icon(Icons.Filled.Add, contentDescription = null )
            }
        }
    ) {paddingValue ->
-        val uiState by viewModel.uiState.collectAsState()
+       val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+       TaskContent(
+           loading = uiState.isLoading,
+           tasks = uiState.items,
+           currentFilteringLabel = uiState.filteringUiInfo.currentFilterLabel,
+           noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
+           noTasksIcon = uiState.filteringUiInfo.noTasksIcon,
+           onRefresh = viewModel::refresh,
+           onTaskClick = onTaskClick,
+           onTaskCheckedChange = viewModel::completeTask,
+           modifier = Modifier.padding(paddingValue)
+       )
 
-        TaskContent(
-            loading = uiState.isLoading,
-            tasks = uiState.items,
-            currentFilteringLabel = uiState.filteringUiInfo.currentFilterLabel,
-            noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
-            noTasksIcon = uiState.filteringUiInfo.noTasksIcon,
-            onRefresh = viewModel::refresh,
-            onTaskClick = onTaskClick,
-            onTaskCheckedChange = viewModel::completeTask,
-            modifier = Modifier.padding(paddingValue))
+
+       uiState.userMessage?.let {message->
+           val snackBarText = stringResource(id = message)
+           LaunchedEffect(scaffoldState, viewModel, message, snackBarText){
+               scaffoldState.snackbarHostState.showSnackbar(snackBarText)
+               viewModel.snackBarMessageShown()
+           }
+       }
+
+       val currentOnUserMessageDisplayed by rememberUpdatedState(newValue = onUserMessageDisplayed)
+       LaunchedEffect(userMessage){
+           userMessage.let {
+               viewModel.showEditResultMessage(userMessage)
+               currentOnUserMessageDisplayed()
+           }
+       }
    }
 }
 
@@ -92,26 +119,39 @@ fun TaskContent(
     onTaskClick: (Task) -> Unit,
     onTaskCheckedChange: (Task, Boolean) -> Unit,
     modifier: Modifier = Modifier){
-    Surface {
-        Column(
-            modifier
-                .fillMaxSize()
-                .padding(16.dp, 8.dp)) {
 
-            Text(text = "All Task",
-            modifier = Modifier.padding(8.dp),
-            style = MaterialTheme.typography.headlineSmall)
+    if(tasks.isNotEmpty()){
+        Surface {
+            Column(
+                modifier
+                    .fillMaxSize()
+                    .padding(16.dp, 8.dp)
+            ) {
 
-            LazyColumn{
-                items(tasks){task ->
-                    TaskItem(
-                        task = task,
-                        onCheckedChange = {onTaskCheckedChange(task, it)},
-                        onTaskClick = onTaskClick)
+                Text(
+                    text = stringResource(id = currentFilteringLabel),
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Normal)
+                )
+
+                LazyColumn{
+                    items(tasks){task ->
+                        TaskItem(
+                            task = task,
+                            onCheckedChange = {onTaskCheckedChange(task, it)},
+                            onTaskClick = onTaskClick
+                        )
+                    }
                 }
             }
         }
+    }else{
+        TasksEmptyContent(
+            noTasksLabel,
+            noTasksIcon
+        )
     }
+    
 }
 
 @Composable
@@ -125,7 +165,7 @@ private fun TaskItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { }
+            .clickable { onTaskClick(task) }
     ) {
         Checkbox(
             checked = task.isCompleted,
@@ -148,22 +188,26 @@ private fun TaskItem(
 
 @Composable
 fun TasksEmptyContent(
+    @StringRes noTasksLabel: Int,
+    @DrawableRes noTasksIcon: Int,
     modifier: Modifier = Modifier
 ){
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = modifier.fillMaxSize()
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_notes),
-            contentDescription = "Empty Screen",
-            modifier.size(96.dp),
-        )
-        Text(
-            text = stringResource(id = R.string.so_empty),
-            modifier.padding(top = 16.dp))
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = noTasksIcon),
+                contentDescription = "Empty Screen",
+                modifier.size(96.dp),
+            )
+            Text(
+                text = stringResource(id = noTasksLabel),
+                modifier.padding(top = 16.dp))
+        }
     }
 }
 
@@ -172,7 +216,16 @@ fun TasksEmptyContent(
 fun TaskContentPreview(){
     ComposeTodoTheme {
         Surface {
-            TaskContent(loading = false, tasks = emptyList(), R.string.label_active, R.string.no_tasks_active, R.drawable.ic_empty, onRefresh = {}, onTaskClick = {}, onTaskCheckedChange = {_ , _->})
+            TaskContent(
+                loading = false,
+                tasks = emptyList(),
+                R.string.label_active,
+                R.string.no_tasks_active,
+                R.drawable.ic_empty,
+                onRefresh = {},
+                onTaskClick = {},
+                onTaskCheckedChange = {_ , _->}
+            )
         }
     }
 }
@@ -183,9 +236,10 @@ fun TaskItemPreview(){
     ComposeTodoTheme {
         Surface{
             TaskItem(
-                task = Task("1", "Task1", "New Task")
-                , onCheckedChange = {}
-                , onTaskClick = {})
+                task = Task("1", "Task1", "New Task", false),
+                onCheckedChange = {},
+                onTaskClick = {}
+            )
         }
     }
 }
@@ -196,9 +250,10 @@ fun TaskItemCompletedPreview(){
     ComposeTodoTheme {
         Surface{
             TaskItem(
-                task = Task("1", "Task1", "New Task", true)
-                , onCheckedChange = {}
-                , onTaskClick = {})
+                task = Task("1", "Task1", "New Task", true),
+                onCheckedChange = {},
+                onTaskClick = {}
+            )
         }
     }
 }
@@ -208,7 +263,10 @@ fun TaskItemCompletedPreview(){
 fun TaskEmptyContentPreview(){
     ComposeTodoTheme {
         Surface {
-            TasksEmptyContent()
+            TasksEmptyContent(
+                R.string.no_tasks,
+                R.drawable.ic_empty
+            )
         }
     }
 }
