@@ -83,18 +83,20 @@ class TasksViewModel @Inject constructor(
 
     fun clearCompletedTasks(){
         viewModelScope.launch {
-            taskRepository.clearCompletedTask()
-            showSnackBarMessage(R.string.cleared_completed_tasks)
+            if(taskRepository.getTasks().isNotEmpty()){
+                taskRepository.clearCompletedTask()
+                showSnackBarMessage(R.string.cleared_completed_tasks)
+            }
             refresh()
         }
     }
 
     fun completeTask(task: Task,  completed: Boolean) = viewModelScope.launch {
         if(completed){
-            taskRepository.completeTask(task.id!!)
+            taskRepository.completeTask(task.id)
             showSnackBarMessage(R.string.marked_complete)
         }else{
-            taskRepository.activateTask(task.id!!)
+            taskRepository.activateTask(task.id)
             showSnackBarMessage(R.string.marked_active)
         }
     }
